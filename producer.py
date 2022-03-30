@@ -39,7 +39,7 @@ def video_emitter():
         # read the image in each frame
         success, image = video.read()
         #downscale video
-        scale_percent = 40
+        scale_percent = 18
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
         dim = (width, height)
@@ -49,9 +49,12 @@ def video_emitter():
             break
         # Convert image to png
         ret, jpeg = cv2.imencode('.png', output)
+        #encode_parm = [int(cv2.IMWRITE_JPEG_QUALITY), 10]
+        #ret, jpeg = cv2.imencode('.png', image, encode_parm)
         # Convert image to bytes and send over kafka
 
         direct_message_publish(messageService, destination_name, bytearray(jpeg))
+
         # Sleep to curtail CPU usage
         #time.sleep(0.2)
     # Clear the capture
