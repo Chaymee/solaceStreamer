@@ -29,7 +29,7 @@ def video_emitter():
         exit(0)
 
     print(' emitting.....')
-    messageService = MessagingService.builder().from_properties(broker_props).build()
+    messageService = MessagingService.builder().from_properties(broker_props).with_message_compression(compression_factor=9).build()
     
     messageService.connect()
     destination_name = Topic.of(TOPIC)
@@ -39,7 +39,7 @@ def video_emitter():
         # read the image in each frame
         success, image = video.read()
         #downscale video
-        scale_percent = 18
+        scale_percent = 100
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
         dim = (width, height)

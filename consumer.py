@@ -2,6 +2,7 @@
 from flask import Flask, Response
 import sys
 
+from solace.messaging.resources.queue import Queue
 from solace.messaging.messaging_service import MessagingService
 from solace.messaging.receiver.inbound_message import InboundMessage
 from solace.messaging.receiver.message_receiver import MessageHandler
@@ -32,7 +33,11 @@ def index():
 def solaceStream():
     
     while True:
-        message_payload = receiver.receive_message().get_payload_as_bytes()
+        
+        received = receiver.receive_message()
+        message_payload = received.get_payload_as_bytes()
+        receiver.ack(received)
+        print('recieved message')
         yield (b'--frame\r\n'
                 b'Content-Type: image/png\r\n\r\n' + message_payload + b'\r\n\r\n')
 
@@ -58,6 +63,11 @@ if __name__ == '__main__':
     service = MessagingService.builder().from_properties(broker_props).build()
     service.connect()
     topics = [TopicSubscription.of(TOPIC)]
-    receiver: DirectMessageReceiver = service.create_direct_message_receiver_builder().with_subscriptions(topics).build()
+
+    # try with queues
+    queue = Queue.durable_exclusive_queue(TOPIC)
+    receiver = service.create_persistent_message_receiver_builder().build(queue)
+
+    #receiver: DirectMessageReceiver = service.create_direct_message_receiver_builder().with_subscriptions(topics).build()
     receiver.start()
     app.run()
